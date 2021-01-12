@@ -53,6 +53,10 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>NSCameraUsageDescription</key>
+	<string>Permitir acceso a fotos</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Permitir acceso a la camara</string>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>

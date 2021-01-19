@@ -1,27 +1,29 @@
 
 
 import UIKit
+import FirebaseAuth
+
 
 class RegisterViewController: UIViewController {
-
+    
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.clipsToBounds = true
-       return scrollView
+        return scrollView
     }()
     
     
     private let imageView: UIImageView = {
         
         let imageView = UIImageView()
-        imageView.image = UIImage(systemName: "person")
+        imageView.image = UIImage(systemName: "person.circle")
         imageView.tintColor = .gray
         imageView.contentMode = .scaleAspectFit
         imageView.layer.masksToBounds = true
         imageView.layer.borderWidth = 2
         imageView.layer.borderColor = UIColor.lightGray.cgColor
         return imageView
-
+        
     }()
     
     private let nameField: UITextField = {
@@ -106,8 +108,8 @@ class RegisterViewController: UIViewController {
         
         loginButton.addTarget(self, action: #selector(registerButtonTapped), for: .touchUpInside)
         
-       emailField.delegate = self
-       passField.delegate = self
+        emailField.delegate = self
+        passField.delegate = self
         
         
         // Subvistas
@@ -127,7 +129,7 @@ class RegisterViewController: UIViewController {
         imageView.addGestureRecognizer(gesture)
         
     }
-   
+    
     
     @objc private func didTapChange() {
         presentPhotoActionSheet()
@@ -145,21 +147,21 @@ class RegisterViewController: UIViewController {
         imageView.layer.cornerRadius = imageView.width/2.0
         
         nameField.frame = CGRect(x: 30,
-                                  y: imageView.bottom+10,
-                                  width: scrollView.width-60,
+                                 y: imageView.bottom+10,
+                                 width: scrollView.width-60,
                                  height: 52)
         lastNameField.frame = CGRect(x: 30,
-                                  y: nameField.bottom+10,
+                                     y: nameField.bottom+10,
+                                     width: scrollView.width-60,
+                                     height: 52)
+        emailField.frame = CGRect(x: 30,
+                                  y: lastNameField.bottom+10,
                                   width: scrollView.width-60,
                                   height: 52)
-        emailField.frame = CGRect(x: 30,
-                                   y: lastNameField.bottom+10,
-                                   width: scrollView.width-60,
-                                   height: 52)
         passField.frame = CGRect(x: 30,
-                                   y: emailField.bottom+10,
-                                   width: scrollView.width-60,
-                                   height: 52)
+                                 y: emailField.bottom+10,
+                                 width: scrollView.width-60,
+                                 height: 52)
         loginButton.frame = CGRect(x: 30,
                                    y: passField.bottom+10,
                                    width: scrollView.width-60,
@@ -185,11 +187,43 @@ class RegisterViewController: UIViewController {
         
         //Firebase
         
+        DatabaseManager.shared.userExist(with: email, completion: {[weak self] exists in
+            guard let strongSelf = self else{
+                return
+            }
+            
+            guard !exists else {
+                strongSelf.alertUserLoginError(message: "La cuenta ya existe")
+                return
+            }
+            FirebaseAuth.Auth.auth().createUser(withEmail: email, password: password, completion: { authResult, error in
+                guard let strongSelf = self else{
+                    
+                    return
+                }
+                guard authResult != nil,error == nil else {
+                    print("error")
+                    return
+                    
+                }
+                
+                DatabaseManager.shared.insertUser(with: UsuarioChat(nombre:nombre
+                                                                    ,apellido: apellido,   emailAddres: email))
+                
+                strongSelf.navigationController?.dismiss(animated: true, completion: nil)
+                
+            })
+        })
+        
+        
+        
+        
+        
         
     }
     
-    func alertUserLoginError() {
-        let alert = UIAlertController(title: "Error", message: "Ingrese todos los datos", preferredStyle: .alert)
+    func alertUserLoginError(message: String = "Ingrese toda la info") {
+        let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
         alert.addAction(UIAlertAction(title: "Quitar", style: .cancel, handler: nil))
         present(alert,animated: true)
         
@@ -202,8 +236,8 @@ class RegisterViewController: UIViewController {
         navigationController?.pushViewController(vc, animated: true)
         
     }
-
- 
+    
+    
 }
 
 extension RegisterViewController: UITextFieldDelegate {
@@ -240,7 +274,7 @@ extension RegisterViewController: UIImagePickerControllerDelegate, UINavigationC
         present(actionSheet,animated: true)
         
     }
-   
+    
     func presentCamera() {
         
         let camara = UIImagePickerController()
